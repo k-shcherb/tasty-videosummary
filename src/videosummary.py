@@ -8,12 +8,14 @@ print(filename)
 folder_to_save = vidpath.strip(filename)
 
 cap = cv2.VideoCapture(vidpath)
+frame_rate = cap.get(cv2.CAP_PROP_FPS)
+print(frame_rate)
 
 ret, frame = cap.read()
 
 frames_to_save = []
-
-paused = 1
+frame_interval = int(1/frame_rate*1000)
+paused = frame_interval
 
 while ret:
     ret, frame = cap.read()
@@ -26,7 +28,7 @@ while ret:
     elif k & 0xFF == ord('k'):
         frames_to_save.append(frame)
     elif k & 0xFF == ord('p'):
-        paused = 0 if paused == 1 else 1
+        paused = 0 if paused !=0 else frame_interval
 cv2.destroyAllWindows()
 if len(frames_to_save) > 0:
     h, w, d = np.shape(frames_to_save[0])
