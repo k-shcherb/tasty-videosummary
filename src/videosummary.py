@@ -1,6 +1,7 @@
 import cv2
 import sys
 import numpy as np
+import math
 
 vidpath = sys.argv[1]
 filename = vidpath.split("\\")[-1]
@@ -14,7 +15,7 @@ print(frame_rate)
 ret, frame = cap.read()
 
 frames_to_save = []
-frame_interval = int(1/frame_rate*1000)
+frame_interval = int(1/60*1000)
 paused = frame_interval
 
 while ret:
@@ -32,7 +33,27 @@ while ret:
 cv2.destroyAllWindows()
 if len(frames_to_save) > 0:
     h, w, d = np.shape(frames_to_save[0])
-    summary = cv2.vconcat(frames_to_save)
+
+    num_sqrt = np.sqrt(len(frames_to_save))
+    nearest_square = math.ceil(num_sqrt)
+    print(nearest_square)
+    rows = []
+    while len(frames_to_save) < nearest_square*nearest_square:
+        frames_to_save.append(np.zeros_like(frames_to_save[0]))
+    for i in range(nearest_square):
+        try:
+            row = cv2.hconcat(frames_to_save[i*nearest_square:nearest_square+nearest_square*i])
+        except IndexError:
+            print("found index error")
+            if len(frames_to_save[i*nearest_square:]) == 0:
+                continue
+            else:
+                while len(frames_to_save) < nearest_square*nearest_square:
+                    frames_to_save.append(np.zeros_like(frames_to_save[0]))
+                row = cv2.hconcat(frames_to_save[i*nearest_square:nearest_square+nearest_square*i])
+        rows.append(row)
+
+    summary = cv2.vconcat(rows)
     print(np.shape(summary))
     cv2.imshow('summary',summary)
     k = cv2.waitKey(0)
